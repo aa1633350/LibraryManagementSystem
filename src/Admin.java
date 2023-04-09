@@ -31,19 +31,20 @@ public class Admin {
         }
 
         // Register a member.
-        String uid = UUID.randomUUID().toString();
-        LibraryMember member = new LibraryMember("Aditya",uid);
+        String uid = UUID.randomUUID().toString().substring(0,6);
+        LibraryMember member = new LibraryMember("Aditya",uid, library);
         library.addMembersToLibrary(member);
-        uid = UUID.randomUUID().toString();
-        member = new LibraryMember("Poonam",uid);
+        uid = UUID.randomUUID().toString().substring(0,6);
+        member = new LibraryMember("Poonam",uid, library);
         library.addMembersToLibrary(member);
         int booksIssued = member.getBooksIssued();
         if(booksIssued<10) {
             member.searchBook();
         } else {
             System.out.printf("Hi %s, you already have 10 books issues , pls return books to issues more", member.getName());
-        }
 
+        }
+        member.getBooksIssuedToMember();
 
 
     }

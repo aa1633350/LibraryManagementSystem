@@ -6,10 +6,10 @@ public class LibraryMember {
     private int booksIssued;
     private List<Book> booksIssuedToMember;
     private Library library;
-    public LibraryMember(String name, String memberId) {
+    public LibraryMember(String name, String memberId, Library library) {
         this.name = name;
         this.memberId = memberId;
-        this.library = new Library();
+        this.library = library;
         this.booksIssuedToMember = new ArrayList<>();
     }
 
@@ -23,20 +23,24 @@ public class LibraryMember {
         System.out.println("4 : To search book by Published Date");
         Scanner sc = new Scanner(System.in);
         int choice = sc.nextInt();
+        sc.nextLine(); // consumes the new line character;
         List<Book> books = library.getBookList();
         switch (choice) {
             case 1:
                 System.out.println("Enter the author :");
-                String author = sc.next();
+                String author = sc.nextLine();
                 searchByAuthor(author, books, sc);
+                break;
             case 2:
                 System.out.println("Enter the title of book :");
-                String title = sc.next();
+                String title = sc.nextLine();
                 searchByTitle(title, books, sc);
+                break;
             case 3:
                 System.out.println("Enter the genre of book :");
-                String genre = sc.next();
+                String genre = sc.nextLine();
                 searchByGenre(genre, books, sc);
+                break;
             default:
                 System.out.println("Please provide a valid input.");
         }
@@ -45,7 +49,7 @@ public class LibraryMember {
     private void searchByAuthor(String authorName, List<Book> books, Scanner scanner) {
         List<Book> booksByAuthor = new ArrayList<>();
         for (Book book : books) {
-            if (book.getAuthor().equals(authorName)) {
+            if (book.getAuthor().equalsIgnoreCase(authorName)) {
                 booksByAuthor.add(book);
             }
         }
@@ -56,14 +60,14 @@ public class LibraryMember {
             for (Book bookByAuthor : booksByAuthor) {
                 System.out.println(bookByAuthor.getTitle());
             }
-            chooseBook(scanner, booksByAuthor);
+            chooseBook(scanner, booksByAuthor, true);
         }
     }
 
     private void searchByTitle(String title, List<Book> books, Scanner scanner) {
         List<Book> booksByTitle = new ArrayList<>();
         for (Book book : books) {
-            if (book.getTitle().equals(title)) {
+            if (book.getTitle().equalsIgnoreCase(title)) {
                 booksByTitle.add(book);
             }
         }
@@ -74,67 +78,93 @@ public class LibraryMember {
             for (Book bookByTitle : booksByTitle) {
                 System.out.println(bookByTitle.getTitle());
             }
-            chooseBook(scanner, booksByTitle);
+            chooseBook(scanner, booksByTitle, true);
         }
     }
 
     private void searchByGenre(String genre, List<Book> books, Scanner scanner) {
         List<Book> booksByGenre = new ArrayList<>();
         for (Book book : books) {
-            if (book.getGenre().equals(genre)) {
+            if (book.getGenre().equalsIgnoreCase(genre)) {
                 booksByGenre.add(book);
             }
         }
         if (booksByGenre.size() == 0) {
-            System.out.println("No books found by author : " + genre);
+            System.out.println("No books found by genre : " + genre);
         } else {
-            System.out.println(booksByGenre.size() + " Books found written by author : " + genre);
+            System.out.println(booksByGenre.size() + " Books found by genre : " + genre);
             for (Book bookByGenre : booksByGenre) {
                 System.out.println(bookByGenre.getTitle());
             }
-            chooseBook(scanner, booksByGenre);
+            //boolean wantToIssueBook = true;
+            chooseBook(scanner, booksByGenre, true);
         }
     }
 
-    private void chooseBook(Scanner scanner, List<Book> books) {
+    private void chooseBook(Scanner scanner, List<Book> books, boolean wantToIssueBook) {
+        if (!wantToIssueBook) {
+            return;
+        }
+
         System.out.println("Do you want to issue a book, press 'Y' or 'N' ");
-        String choice = scanner.next();
-        if(choice.equalsIgnoreCase("Y")) {
-            issueBookToMember(this.memberId, this.booksIssued, books, scanner);
-        } else {
-            System.out.println("Happy searching !!");
+        String choice = scanner.nextLine();
+        if (choice.equalsIgnoreCase("N")) {
+            wantToIssueBook = false;
         }
+        if (wantToIssueBook) {
+            issueBookToMember(this.memberId, this.booksIssued, books);
+        } else if (!wantToIssueBook) {
+            System.out.println("Sorry to see you go, happy searching !!");
+        } else {
+            System.out.println("Invalid choice provided please try again. ");
+        }
+
+        chooseBook(scanner, books, wantToIssueBook);
     }
 
 
-    private void issueBookToMember(String memberId, int numOfBooksIssued, List<Book> books, Scanner scanner) {
-        System.out.println("Enter the book name you want :");
-        String title = scanner.next();
+    private void issueBookToMember(String memberId, int numOfBooksIssued, List<Book> books) {
+        boolean bookFound = false;
+        Scanner sc = new Scanner(System.in);
+        System.out.print("Enter the book name you want :");
+        String bookTitle = sc.nextLine();
 
-        for(Book book : books) {
-            if(title.equalsIgnoreCase(book.getTitle())) {
-                int remainingCopies = Math.max(book.getCopies() - 1, 0);
-                if(remainingCopies == 0) {
-                    System.out.println("Oops !! " + book.getTitle() + " is currently not available. We regret the inconvenience ");
-                    return;
+            for(Book book : books) {
+                if(bookTitle.equalsIgnoreCase(book.getTitle())) {
+                    bookFound = true;
+                    int remainingCopies = Math.max(book.getCopies() - 1, 0);
+                    if(remainingCopies == 0) {
+                        System.out.println("Oops !! " + book.getTitle() + " is currently not available. We regret the inconvenience ");
+                        return;
+                    }
+                    this.booksIssued = numOfBooksIssued + 1;
+                    this.booksIssuedToMember.add(book);
+                    book.setCopies(remainingCopies);
+                    System.out.printf("Congratulations, %s memberId %s book %s has been issued to you. ", this.name, memberId, book.getTitle());
+                    System.out.println();
+                    System.out.println("-----------------------------------------------------------------");
                 }
-                this.booksIssued = numOfBooksIssued + 1;
-                this.booksIssuedToMember.add(book);
-                book.setCopies(remainingCopies);
             }
-        }
+            if (!bookFound) {
+                System.out.println("Wrong name entered, please try again !!");
+            }
+
+    }
+
+
+    public String getName() {
+        return name;
     }
 
     public int getBooksIssued() {
         return booksIssued;
     }
 
-    public List<Book> getBooksIssuedToMember() {
-        return booksIssuedToMember;
+    public void getBooksIssuedToMember() {
+        int count=1;
+        for(Book book : booksIssuedToMember) {
+            System.out.printf("%d %s", count, book.getTitle());
+            count++;
+        }
     }
-
-    public String getName() {
-        return name;
-    }
-
 }

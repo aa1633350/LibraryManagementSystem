@@ -5,9 +5,6 @@ public class Library {
     List<Book> bookList;
     List<LibraryMember> members;
 
-    public Library() {
-    }
-
     public Library(List<Book> bookList, List<LibraryMember> members) {
         this.bookList = bookList;
         this.members = members;
