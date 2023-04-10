@@ -119,7 +119,7 @@ public class LibraryMember {
             System.out.println("Invalid choice provided please try again. ");
         }
 
-        chooseBook(scanner, books, wantToIssueBook);
+        searchBook();
     }
 
 
